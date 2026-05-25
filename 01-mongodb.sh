@@ -35,7 +35,7 @@ cp mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "Adding Mongo repo" 
 
 dnf install mongodb-org -y &>> $LOGS_FILE
-VALIDATE $? "Intalling mongoDb"
+VALIDATE $? "Intalling mongoDB"
 
 systemctl enable --now mongod
 VALIDATE $? "satrting and enabiling mongoDB"
@@ -43,7 +43,7 @@ VALIDATE $? "satrting and enabiling mongoDB"
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mongod.conf
 VALIDATE $? "Allowing remote connections to MongoDB"
 
-systemctl restart mongodb
+systemctl restart mongod
 VALIDATE $? "Resatarting MongoDB"
 
 
