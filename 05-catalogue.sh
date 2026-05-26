@@ -45,7 +45,7 @@ fi
 rm -rf /app
 VALIDATE $? "Removing existing code"
 
-rm-rf /tmp/catalogue.zip
+rm -rf /tmp/catalogue.zip
 VALIDATE $? "Removing  catalouge zip"
 
 mkdir -p  /app &>> $LOGS_FILE
