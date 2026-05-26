@@ -15,7 +15,7 @@ do
 	   --query 'Instances[0].InstanceId' \
        --output text
    )
-   echo "Instance ID: $INSTANCE_ID"
+   echo "instance ID: $INSTANCE_ID"
 
    if [ $instance == "frontend" ]; then
         IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
@@ -28,7 +28,7 @@ do
           --query 'Reservations[*].Instances[*].PrivateIpAddress' \
           --output text
         )
-        R53_RECORD="$INSTANCE.$DOMAIN_NAME"
+        R53_RECORD="$instance.$DOMAIN_NAME"
     fi
 
     
@@ -55,6 +55,7 @@ do
             
             
         }
+    
     '
 
 
