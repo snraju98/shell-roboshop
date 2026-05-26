@@ -6,6 +6,7 @@ sudo chown -R ec2-user:ec2-user $LOGS_FOLDER
 sudo chmod -R 755 $LOGS_FOLDER
 LOGS_FILE="$LOGS_FOLDER/$0.log"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+SCRIPT_DIR=$PWD
 
 USERID=$(id -u)
 R="\e[31m"
@@ -38,8 +39,45 @@ if [ $? -ne 0 ]; then
   useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>> $LOGS_FILE
   VALIDATE $? "Creating roboshop system user"
 else
-   echo "System user roboshop already created .. $Y SKIPPING $N"
+   echo -e  "System user roboshop already created .. $Y SKIPPING $N"
 fi
+
+rm -rf /app
+VALIDATE $? "Removing existing code"
+
+rm-rf /tmp/catalogue.zip
+VALIDATE $? "Removing  catalouge zip"
 
 mkdir -p  /app &>> $LOGS_FILE
 VALIDATE $? "Creating app dirrectory" 
+
+curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip &>> $LOGS_FILE
+cd /app 
+unzip /tmp/catalogue.zip &>> $LOGS_FILE
+VALIDATE $? "Downloaded and extracted catalouge code"
+
+npm install &>> $LOGS_FILE
+VALIDATE $? "Installing dependencies"
+
+cp $SCRIPT_DIR/catalouge.service /etc/systemd/system/catalouge.service
+VALIDATE $? "Created systemctl service"
+
+cp $SCRIPT_DIR/mongo.repo /etc/yum.repo.d/mongo.repo
+VALIDATE $? "Added mongo repo"
+
+dnf install mongodb-mongosh -y &>> $LOGS_FILE
+VALIDATE $? "Installed MongoDB client"
+
+
+INDEX=$(mongosh --host mongodb.daws90s.shop --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
+
+if [ $INDEX -lt 0 ]; then
+    mongosh --host mongodb.daws90s.shop </app/db/master-data.js &>>$LOGS_FILE
+    VALIDATE $? "Load Products"
+else
+    echo -e "Products already loaded ... $Y SKIPPING $N"
+fi
+
+systemctl enable catalogue &>>$LOGS_FILE
+systemctl restart catalogue &>>$LOGS_FILE
+VALIDATE $? "Restarting catalogue"
